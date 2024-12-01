@@ -4,12 +4,25 @@ class JokeService {
   final String _baseUrl = 'https://v2.jokeapi.dev/joke';
   final Dio _dio = Dio();
 
-  Future<List<String>> fetchJokesRaw() async {
+  // List of available joke categories
+  final List<String> categories = [
+    'Programming',
+    'Misc',
+    'Dark',
+    'Pun',
+  ];
+
+  Future<List<String>> fetchJokesRaw({String category = 'Programming'}) async {
     try {
+      // Validate the category
+      if (!categories.contains(category)) {
+        throw Exception('Invalid joke category');
+      }
+
       final response = await _dio.get(
-        '$_baseUrl/Programming',
+        '$_baseUrl/$category',
         queryParameters: {
-          'amount': 4,
+          'amount': 5,
           'type': 'single',
           'blacklistFlags': 'nsfw,religious,political,racist,sexist,explicit',
         },
@@ -24,7 +37,7 @@ class JokeService {
       final List<dynamic> jokesJson = response.data['jokes'];
       return jokesJson.map((joke) => joke['joke'] as String).toList();
     } catch (e) {
-      throw Exception('Failed to load jokes');
+      throw Exception('Failed to load jokes: ${e.toString()}');
     }
   }
 }
